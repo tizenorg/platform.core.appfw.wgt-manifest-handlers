@@ -1,0 +1,2 @@
+ADD_SUBDIRECTORY(wgt_manifest_handlers)
+ADD_SUBDIRECTORY(unit_tests)
