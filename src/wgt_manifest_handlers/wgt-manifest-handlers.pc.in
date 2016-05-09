@@ -1,0 +1,11 @@
+prefix=@PREFIX@
+exec_prefix=@PREFIX@
+libdir=@LIBDIR@
+includedir=@INCLUDEDIR@
+
+Name: wgt-manifest-handlers
+Description: Manifest handlers for wgt manifest parser
+Version: @VERSION@
+Requires: manifest-parser
+Libs: -L${libdir} -lwgt-manifest-handlers
+Cflags: -I${includedir}
