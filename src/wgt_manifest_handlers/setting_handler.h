@@ -56,6 +56,7 @@ class SettingInfo : public parser::ManifestData {
    */
   void set_screen_orientation(ScreenOrientation orientation) {
     screen_orientation_ = orientation;
+    orientation_defaulted_ = false;
   }
   /**
    * @brief screen_orientation
@@ -174,6 +175,20 @@ class SettingInfo : public parser::ManifestData {
    */
   bool background_vibration() const { return background_vibration_; }
 
+  /**
+   * @brief set_orientation_defaulted
+   * @param orientation_defaulted
+   */
+  void set_orientation_defaulted(bool orientation_defaulted) {
+    orientation_defaulted_ = orientation_defaulted;
+  }
+
+  /**
+   * @brief orientation_defaulted
+   * @return information if orientation has default value
+   */
+  bool orientation_defaulted() const { return orientation_defaulted_; }
+
  private:
   bool hwkey_enabled_;
   ScreenOrientation screen_orientation_;
@@ -187,6 +202,8 @@ class SettingInfo : public parser::ManifestData {
   std::string user_agent_;
   SoundMode sound_mode_;
   bool background_vibration_;
+
+  bool orientation_defaulted_;
 };
 
 /**
@@ -209,6 +226,7 @@ class SettingHandler : public parser::ManifestHandler {
       const parser::ManifestDataMap& handlers_output,
       std::string* error) const override;
   std::string Key() const override;
+  std::vector<std::string> PrerequisiteKeys() const override;
 };
 }  // namespace parse
 }  // namespace wgt

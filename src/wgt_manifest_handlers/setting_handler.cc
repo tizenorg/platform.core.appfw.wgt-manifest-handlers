@@ -12,7 +12,9 @@
 #include <map>
 #include <utility>
 
+#include "manifest_parser/utils/version_number.h"
 #include "wgt_manifest_handlers/application_manifest_constants.h"
+#include "wgt_manifest_handlers/tizen_application_handler.h"
 
 namespace {
 
@@ -33,6 +35,7 @@ const char kTizenSoundModeKey[] = "@sound-mode";
 const char kTizenBackgroundVibrationKey[] = "@background-vibration";
 const char kTizenNamespacePrefix[] = "http://tizen.org/ns/widgets";
 const char kTizenSettingKey[] = "widget.setting";
+const utils::VersionNumber kDefaultAutoOrientationVersion("3.0");
 
 bool ForAllFindKey(const parser::Value* value, const std::string& key,
                    std::string* result) {
@@ -73,7 +76,8 @@ SettingInfo::SettingInfo()
       indicator_presence_(true),
       backbutton_presence_(false),
       sound_mode_(SoundMode::SHARED),
-      background_vibration_(false) {}
+      background_vibration_(false),
+      orientation_defaulted_(true) {}
 
 SettingInfo::~SettingInfo() {}
 
@@ -98,7 +102,7 @@ bool SettingHandler::Parse(const parser::Manifest& manifest,
     app_info->set_screen_orientation(SettingInfo::ScreenOrientation::PORTRAIT);
   else if (strcasecmp("landscape", screen_orientation.c_str()) == 0)
     app_info->set_screen_orientation(SettingInfo::ScreenOrientation::LANDSCAPE);
-  else
+  else if (strcasecmp("auto", screen_orientation.c_str()) == 0)
     app_info->set_screen_orientation(SettingInfo::ScreenOrientation::AUTO);
 
   std::string encryption;
@@ -151,9 +155,31 @@ bool SettingHandler::Parse(const parser::Manifest& manifest,
 
 bool SettingHandler::Validate(
     const parser::ManifestData& data,
-    const parser::ManifestDataMap& /*handlers_output*/,
+    const parser::ManifestDataMap& handlers_output,
     std::string* error) const {
   const SettingInfo& setting_info = static_cast<const SettingInfo&>(data);
+
+#if defined(TIZEN_MOBILE) || defined(TIZEN_WEARABLE)
+  // backward compatibility
+  if (setting_info.orientation_defaulted()) {
+    const TizenApplicationInfo& app_info =
+      static_cast<const TizenApplicationInfo&>(
+        *handlers_output.find(TizenApplicationInfo::Key())->second);
+    utils::VersionNumber required_version(app_info.required_version());
+    if (!required_version.IsValid()) {
+      *error = "Cannot retrieve required API version from widget";
+      return false;
+    }
+    if (required_version < kDefaultAutoOrientationVersion) {
+      auto constless_setting_info = const_cast<SettingInfo&>(setting_info);
+      constless_setting_info.set_screen_orientation(
+          SettingInfo::ScreenOrientation::PORTRAIT);
+      // keep claiming it is default
+      constless_setting_info.set_orientation_defaulted(true);
+    }
+  }
+#endif
+
   if (setting_info.screen_orientation() !=
           SettingInfo::ScreenOrientation::AUTO &&
       setting_info.screen_orientation() !=
@@ -185,6 +211,10 @@ bool SettingHandler::Validate(
 
 std::string SettingHandler::Key() const {
   return kTizenSettingKey;
+}
+
+std::vector<std::string> SettingHandler::PrerequisiteKeys() const {
+  return { TizenApplicationInfo::Key() };
 }
 
 std::string SettingInfo::Key() {
