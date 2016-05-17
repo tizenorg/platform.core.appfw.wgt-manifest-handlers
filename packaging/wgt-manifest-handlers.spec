@@ -30,7 +30,6 @@ Summary:    Wgt manifest handlers development files
 Group:      Application Framework/Package Management
 Requires:   %{name} = %{version}
 Requires:   boost-devel
-Provides:   manifest-parser-devel
 
 %description devel
 This package contains necessaary files for wgt-manifest-handlers development
