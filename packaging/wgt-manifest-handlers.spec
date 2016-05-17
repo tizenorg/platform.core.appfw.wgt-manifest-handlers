@@ -30,7 +30,6 @@ Summary:    Wgt manifest handlers development files
 Group:      Application Framework/Package Management
 Requires:   %{name} = %{version}
 Requires:   boost-devel
-Provides:   manifest-parser-devel
 
 %description devel
 This package contains necessaary files for wgt-manifest-handlers development
@@ -70,16 +69,12 @@ make %{?_smp_mflags}
 %files
 %manifest %{name}.manifest
 %defattr(-,root,root)
-#%{_libdir}/libmanifest-parser.so*
-#%{_libdir}/libmanifest-parser-utils.so*
 %{_libdir}/libwgt-manifest-handlers.so*
 %license LICENSE LICENSE-xwalk
 
 %files devel
 %manifest %{name}.manifest
 %{_libdir}/pkgconfig/*.pc
-#%{_includedir}/manifest_parser/*.h
-#%{_includedir}/manifest_parser/utils/*.h
 %{_includedir}/wgt_manifest_handlers/*.h
 
 %files tests
