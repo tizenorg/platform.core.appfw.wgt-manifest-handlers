@@ -101,7 +101,7 @@ bool AppControlHandler::Parse(
 
 bool AppControlHandler::Validate(
     const parser::ManifestData& data,
-    const parser::ManifestDataMap& handlers_output,
+    const parser::ManifestDataMap& /*handlers_output*/,
     std::string* error) const {
   const AppControlInfoList& app_controls =
        static_cast<const AppControlInfoList&>(data);
