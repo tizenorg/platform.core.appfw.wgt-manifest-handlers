@@ -182,6 +182,8 @@ bool SettingHandler::Validate(
       constless_setting_info.set_orientation_defaulted(true);
     }
   }
+#else
+  (void)handlers_output;
 #endif
 
   if (setting_info.screen_orientation() !=
