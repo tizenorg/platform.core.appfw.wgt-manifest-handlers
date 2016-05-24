@@ -30,6 +30,8 @@ enum AppWidgetSizeType {
   k1x1, k2x1, k2x2
 };
 
+std::string AppWidgetSizeTypeToString(AppWidgetSizeType type);
+
 struct AppWidgetSize {
   // mandatory
   AppWidgetSizeType type;
@@ -101,6 +103,7 @@ typedef std::vector<AppWidget> AppWidgetVector;
 
 class AppWidgetInfo : public parser::ManifestData {
  public:
+  AppWidgetInfo() { }
   explicit AppWidgetInfo(const AppWidgetVector& app_widgets);
   virtual ~AppWidgetInfo();
 

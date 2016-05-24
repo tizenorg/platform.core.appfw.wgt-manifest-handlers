@@ -465,6 +465,20 @@ bool ValidateContentSize(const AppWidgetSizeVector& content_size,
 
 }  // namespace
 
+
+std::string AppWidgetSizeTypeToString(AppWidgetSizeType type) {
+  switch (type) {
+    case k1x1:
+      return "1x1";
+    case k2x1:
+      return "2x1";
+    case k2x2:
+      return "2x2";
+    default:
+      assert(false && "Invalid dbox size");
+  }
+}
+
 AppWidgetInfo::AppWidgetInfo(const AppWidgetVector& app_widgets)
     : app_widgets_(app_widgets) {}
 
