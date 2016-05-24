@@ -146,7 +146,9 @@ class SettingInfo : public parser::ManifestData {
    * @brief set_user_agent sets user_agent()
    * @param user_agent
    */
-  void set_user_agent(std::string user_agent) { user_agent_ = std::move(user_agent); }
+  void set_user_agent(std::string user_agent) {
+      user_agent_ = std::move(user_agent);
+  }
   /**
    * @brief user_agent
    * @return actual user agent
