@@ -36,12 +36,16 @@ const char kTizenAppWidgetBoxContentDropViewHeightKey[] = "@height";
 const char kTizenAppWidgetBoxContentSrcKey[] = "@src";
 const char kTizenAppWidgetBoxContentMouseEventKey[] = "@mouse-event";
 const char kTizenAppWidgetBoxContentTouchEffectKey[] = "@touch-effect";
-const char kTizenAppWidgetBoxContentSizeKey[] = "box-size";
+const char kTizenAppWidgetBoxContentBoxSizeKey[] = "box-size";
+const char kTizenAppWidgetBoxContentWidgetSizeKey[] = "widget-size";
 const char kTizenAppWidgetBoxContentDropViewKey[] = "pd";
 const char kTizenAppWidgetAutoLaunchKey[] = "@auto-launch";
 const char kTizenAppWidgetBoxLabelKey[] = "box-label";
 const char kTizenAppWidgetBoxIconKey[] = "box-icon";
 const char kTizenAppWidgetBoxContentKey[] = "box-content";
+const char kTizenAppWidgetWidgetLabelKey[] = "widget-label";
+const char kTizenAppWidgetWidgetIconKey[] = "widget-icon";
+const char kTizenAppWidgetWidgetContentKey[] = "widget-content";
 const char kTizenAppWidgetIdKey[] = "@id";
 const char kTizenAppWidgetPrimaryKey[] = "@primary";
 const char kTizenAppWidgetUpdatePeriodKey[] = "@update-period";
@@ -365,12 +369,19 @@ bool ParseContent(const parser::DictionaryValue& dict, const std::string& key,
                         &app_widget->content_touch_effect, error))
     return false;
 
-  if (!dict.HasKey(kTizenAppWidgetBoxContentSizeKey))
+  if (!dict.HasKey(kTizenAppWidgetBoxContentBoxSizeKey) && !dict.HasKey(kTizenAppWidgetBoxContentWidgetSizeKey))
     return false;
 
   for (const auto& dict_cs : parser::GetOneOrMany(&dict,
-      kTizenAppWidgetBoxContentSizeKey, "")) {
-    if (!ParseContentSizes(*dict_cs, kTizenAppWidgetBoxContentSizeKey,
+      kTizenAppWidgetBoxContentBoxSizeKey, "")) {
+    if (!ParseContentSizes(*dict_cs, kTizenAppWidgetBoxContentBoxSizeKey,
+        app_widget, error))
+      return false;
+  }
+
+  for (const auto& dict_cs : parser::GetOneOrMany(&dict,
+      kTizenAppWidgetBoxContentWidgetSizeKey, "")) {
+    if (!ParseContentSizes(*dict_cs, kTizenAppWidgetBoxContentWidgetSizeKey,
         app_widget, error))
       return false;
   }
@@ -414,12 +425,19 @@ bool ParseAppWidget(const parser::DictionaryValue& dict, const std::string& key,
                         &app_widget.auto_launch, error))
     return false;
 
-  if (!dict.HasKey(kTizenAppWidgetBoxLabelKey))
+  if (!dict.HasKey(kTizenAppWidgetBoxLabelKey) && !dict.HasKey(kTizenAppWidgetWidgetLabelKey))
     return false;
 
   for (const auto& dict_l : parser::GetOneOrMany(&dict,
       kTizenAppWidgetBoxLabelKey, kTizenNamespacePrefix)) {
     if (!ParseLabel(*dict_l, kTizenAppWidgetBoxLabelKey,
+        &app_widget, error))
+      return false;
+  }
+
+  for (const auto& dict_l : parser::GetOneOrMany(&dict,
+      kTizenAppWidgetWidgetLabelKey, kTizenNamespacePrefix)) {
+    if (!ParseLabel(*dict_l, kTizenAppWidgetWidgetLabelKey,
         &app_widget, error))
       return false;
   }
@@ -431,12 +449,26 @@ bool ParseAppWidget(const parser::DictionaryValue& dict, const std::string& key,
       return false;
   }
 
-  if (!dict.HasKey(kTizenAppWidgetBoxContentKey))
+  for (const auto& dict_i : parser::GetOneOrMany(&dict,
+      kTizenAppWidgetWidgetIconKey, kTizenNamespacePrefix)) {
+    if (!ParseIcon(*dict_i, kTizenAppWidgetWidgetIconKey,
+        &app_widget, error))
+      return false;
+  }
+
+  if (!dict.HasKey(kTizenAppWidgetBoxContentKey) && !dict.HasKey(kTizenAppWidgetWidgetContentKey))
     return false;
 
   for (const auto& dict_c : parser::GetOneOrMany(&dict,
       kTizenAppWidgetBoxContentKey, kTizenNamespacePrefix)) {
     if (!ParseContent(*dict_c, kTizenAppWidgetBoxContentKey,
+        &app_widget, error))
+      return false;
+  }
+
+  for (const auto& dict_c : parser::GetOneOrMany(&dict,
+      kTizenAppWidgetWidgetContentKey, kTizenNamespacePrefix)) {
+    if (!ParseContent(*dict_c, kTizenAppWidgetWidgetContentKey,
         &app_widget, error))
       return false;
   }
@@ -530,9 +562,6 @@ bool AppWidgetHandler::Validate(
       SetError(kErrMsgNoLabel, error);
       return false;
     }
-
-    if (!ValidateContentSize(app_widget.content_size, error))
-      return false;
 
     if (!app_widget.content_drop_view.empty()) {
       const AppWidgetDropView& drop_view = app_widget.content_drop_view.front();
