@@ -105,7 +105,7 @@ bool SettingHandler::Parse(const parser::Manifest& manifest,
     else if (strcasecmp("landscape", screen_orientation.c_str()) == 0)
       app_info->set_screen_orientation(
           SettingInfo::ScreenOrientation::LANDSCAPE);
-    else if (strcasecmp("auto", screen_orientation.c_str()) == 0)
+    else if (strcasecmp("auto-rotation", screen_orientation.c_str()) == 0)
       app_info->set_screen_orientation(SettingInfo::ScreenOrientation::AUTO);
 
     std::string encryption;
