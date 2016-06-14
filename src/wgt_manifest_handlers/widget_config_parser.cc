@@ -132,7 +132,13 @@ FindResult FindFileWithinWidget(const bf::path& widget_path,
   }
   // Steps 4. && 5.
   std::vector<std::string> path_components;
-  ba::split(path_components, content_value, ba::is_any_of("/"));
+  try {
+    ba::split(path_components, content_value, ba::is_any_of("/"));
+  } catch (const boost::exception& /*exc*/) {
+    LOG(ERROR) << "boost::algorithm::split failed";
+    return FindResult::ERROR;
+  }
+
   if (path_components.size() >= 1 && path_components[0] == kLocaleDirectory) {
     if (path_components.size() == 1)
       return FindResult::NUL;
