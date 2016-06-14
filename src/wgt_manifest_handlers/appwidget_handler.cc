@@ -5,6 +5,8 @@
 
 #include "wgt_manifest_handlers/appwidget_handler.h"
 
+#include <boost/lexical_cast/try_lexical_convert.hpp>
+
 #include <cassert>
 #include <cstdlib>
 #include <limits>
@@ -133,9 +135,7 @@ bool ConvertValue(const std::string& str_value, bool* value) {
 template <>
 bool ConvertValue(const std::string& str_value, int* value) {
   assert(value);
-  char* end = nullptr;
-  *value = strtol(str_value.c_str(), &end, 10);
-  return end == &*str_value.end();
+  return boost::conversion::detail::try_lexical_convert(str_value, *value);
 }
 
 // Converts given text value to a floating point value. Returns true
@@ -143,9 +143,7 @@ bool ConvertValue(const std::string& str_value, int* value) {
 template <>
 bool ConvertValue(const std::string& str_value, double* value) {
   assert(value);
-  char* end = nullptr;
-  *value = strtod(str_value.c_str(), &end);
-  return end == &*str_value.end();
+  return boost::conversion::detail::try_lexical_convert(str_value, *value);
 }
 
 // Retrieves a mandatory value from specified dictionary and specified key.
