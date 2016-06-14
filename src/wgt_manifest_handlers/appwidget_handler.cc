@@ -133,9 +133,15 @@ bool ConvertValue(const std::string& str_value, bool* value) {
 template <>
 bool ConvertValue(const std::string& str_value, int* value) {
   assert(value);
-  char* end = nullptr;
-  *value = strtol(str_value.c_str(), &end, 10);
-  return end == &*str_value.end();
+  try {
+    size_t size = 0;
+    *value = std::stoi(str_value, &size);
+    return size == str_value.size();
+  } catch (const std::invalid_argument& /*exc*/) {
+    return false;
+  } catch (const std::out_of_range& /*exc*/) {
+    return false;
+  }
 }
 
 // Converts given text value to a floating point value. Returns true
@@ -143,9 +149,15 @@ bool ConvertValue(const std::string& str_value, int* value) {
 template <>
 bool ConvertValue(const std::string& str_value, double* value) {
   assert(value);
-  char* end = nullptr;
-  *value = strtod(str_value.c_str(), &end);
-  return end == &*str_value.end();
+  try {
+    size_t size = 0;
+    *value = std::stod(str_value, &size);
+    return size == str_value.size();
+  } catch (const std::invalid_argument& /*exc*/) {
+    return false;
+  } catch (const std::out_of_range& /*exc*/) {
+    return false;
+  }
 }
 
 // Retrieves a mandatory value from specified dictionary and specified key.
