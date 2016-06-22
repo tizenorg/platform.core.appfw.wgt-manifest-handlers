@@ -551,7 +551,8 @@ bool AppWidgetHandler::Validate(
 
   for (const AppWidget& app_widget : app_widgets) {
     if (!app_widget.update_period.empty() &&
-        app_widget.update_period.front() < 1800) {
+        (app_widget.update_period.front() < 1800 ||
+         fmod(app_widget.update_period.front(),1800)!=0.0)) {
       SetError(kErrMsgUpdatePeriodOutOfDomain,
                std::to_string(app_widget.update_period.front()), error);
       return false;
