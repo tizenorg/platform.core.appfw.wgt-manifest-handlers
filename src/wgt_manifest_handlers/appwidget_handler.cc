@@ -367,7 +367,8 @@ bool ParseContent(const parser::DictionaryValue& dict, const std::string& key,
                         &app_widget->content_touch_effect, error))
     return false;
 
-  if (!dict.HasKey(kTizenAppWidgetBoxContentBoxSizeKey) && !dict.HasKey(kTizenAppWidgetBoxContentWidgetSizeKey))
+  if (!dict.HasKey(kTizenAppWidgetBoxContentBoxSizeKey)
+          && !dict.HasKey(kTizenAppWidgetBoxContentWidgetSizeKey))
     return false;
 
   for (const auto& dict_cs : parser::GetOneOrMany(&dict,
@@ -423,7 +424,8 @@ bool ParseAppWidget(const parser::DictionaryValue& dict, const std::string& key,
                         &app_widget.auto_launch, error))
     return false;
 
-  if (!dict.HasKey(kTizenAppWidgetBoxLabelKey) && !dict.HasKey(kTizenAppWidgetWidgetLabelKey))
+  if (!dict.HasKey(kTizenAppWidgetBoxLabelKey)
+          && !dict.HasKey(kTizenAppWidgetWidgetLabelKey))
     return false;
 
   for (const auto& dict_l : parser::GetOneOrMany(&dict,
@@ -454,7 +456,8 @@ bool ParseAppWidget(const parser::DictionaryValue& dict, const std::string& key,
       return false;
   }
 
-  if (!dict.HasKey(kTizenAppWidgetBoxContentKey) && !dict.HasKey(kTizenAppWidgetWidgetContentKey))
+  if (!dict.HasKey(kTizenAppWidgetBoxContentKey)
+          && !dict.HasKey(kTizenAppWidgetWidgetContentKey))
     return false;
 
   for (const auto& dict_c : parser::GetOneOrMany(&dict,
