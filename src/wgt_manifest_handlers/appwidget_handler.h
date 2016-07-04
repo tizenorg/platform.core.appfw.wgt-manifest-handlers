@@ -136,6 +136,7 @@ class AppWidgetHandler : public parser::ManifestHandler {
       const parser::ManifestDataMap& handlers_output,
       std::string* error) const override;
   std::string Key() const override;
+  std::vector<std::string> PrerequisiteKeys() const override;
 };
 
 }  // namespace parse
