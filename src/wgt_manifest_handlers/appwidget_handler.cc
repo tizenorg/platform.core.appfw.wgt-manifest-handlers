@@ -79,8 +79,9 @@ const char kErrMsgInvalidContentDropViewSrc[] =
 const char kErrMsgContentDropViewHeightOutOfDomain[] =
     "Value of a height attribute in box-content element out of domain."
     " The value: ";
-
-const std::regex kStringRegex("[.][0-9a-zA-Z]+");
+const char kErrMsgIdIsNotValid[] = "ID of the widget should match"
+    " the pattern: ";
+const std::string kStringRegex("[.][0-9a-zA-Z]+");
 
 // If the error parameter is specified, it is filled with the given message
 // otherwise it does nothing.
@@ -544,11 +545,19 @@ bool AppWidgetHandler::Parse(
 
 bool AppWidgetHandler::Validate(
     const parser::ManifestData& data,
-    const parser::ManifestDataMap& /*handlers_output*/,
+    const parser::ManifestDataMap& handlers_output,
     std::string* error) const {
   const AppWidgetInfo& app_widget_info =
       static_cast<const AppWidgetInfo&>(data);
   const AppWidgetVector& app_widgets = app_widget_info.app_widgets();
+
+  auto tizen_app_info =
+  std::static_pointer_cast<TizenApplicationInfo>(
+          handlers_output.at(
+              application_widget_keys::kTizenApplicationKey));
+  const std::string id_pattern =
+      "(" + tizen_app_info->id() + ")" + kStringRegex;
+  std::regex id_regex(id_pattern);
 
   for (const AppWidget& app_widget : app_widgets) {
     if (!app_widget.update_period.empty() &&
@@ -556,6 +565,10 @@ bool AppWidgetHandler::Validate(
       SetError(kErrMsgUpdatePeriodOutOfDomain,
                std::to_string(app_widget.update_period.front()), error);
       return false;
+    }
+    if (!std::regex_match(app_widget.id, id_regex)) {
+        SetError(kErrMsgIdIsNotValid, id_pattern, error);
+        return false;
     }
 
     if (app_widget.label.default_value.empty() &&
