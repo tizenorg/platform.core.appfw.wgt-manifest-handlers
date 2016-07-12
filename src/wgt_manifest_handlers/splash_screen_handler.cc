@@ -23,8 +23,6 @@ namespace keys = wgt::application_widget_keys;
 namespace wgt_parse = wgt::parse;
 
 namespace {
-const char kTizenSplashScreenSrcKey[] = "@src";
-const char kTizenSplashScreenKey[] = "widget.splash-screen";
 const char kTizenNamespacePrefix[] = "http://tizen.org/ns/widgets";
 const char kTagDelimiter[] = " ";
 const char kFirstPaint[] = "first-paint";
@@ -75,7 +73,7 @@ namespace wgt {
 namespace parse {
 
 std::string SplashScreenInfo::Key() {
-  return kTizenSplashScreenKey;
+  return kSplashScreenKey;
 }
 
 bool SplashScreenHandler::ParseSingleOrientation(
@@ -146,9 +144,11 @@ bool SplashScreenHandler::ParseReadyWhen(const parser::Manifest& manifest,
     return false;
 
   std::string ready_when;
-  dict_values[0]->GetAsString(&ready_when);
+  dict_values[0]->GetString(kSplashScreenReadyWhen, &ready_when);
 
-  if (ready_when.empty()) return false;
+  if (ready_when.empty()) {
+      ready_when = kFirstPaint;
+  }
   if (ready_when != kFirstPaint && ready_when != kComplete &&
       ready_when != kCustom)
     return false;
@@ -184,23 +184,11 @@ bool SplashScreenHandler::Validate(
     const parser::ManifestData& data,
     const parser::ManifestDataMap& /*handlers_output*/,
     std::string* error) const {
-  const SplashScreenInfo& splash_data =
-      static_cast<const SplashScreenInfo&>(data);
-  std::string src = splash_data.src();
-  // According to w3c specification splash screen image should be of one of
-  // below types.
-  if (src.compare(src.size() - 3, 3, "png") &&
-      src.compare(src.size() - 3, 3, "svg") &&
-      src.compare(src.size() - 3, 3, "gif") &&
-      src.compare(src.size() - 3, 3, "jpg")) {
-    *error = "Not supported file extension of splash image";
-    return false;
-  }
   return true;
 }
 
 std::string SplashScreenHandler::Key() const {
-  return kTizenSplashScreenKey;
+  return kSplashScreenKey;
 }
 
 }  // namespace parse
