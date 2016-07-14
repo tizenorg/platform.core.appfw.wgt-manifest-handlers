@@ -58,6 +58,9 @@ ConvertStringToColor(const std::string& color_str) {
       color->red = to_long(0, 2);
       color->green = to_long(2, 2);
       color->blue = to_long(4, 2);
+      break;
+    default:
+      return nullptr;
   }
   return color;
 }
@@ -90,22 +93,25 @@ bool SplashScreenHandler::ParseSingleOrientation(
     ParseElement(dict, &splash_screen.image, kSplashScreenImage);
     ParseElement(dict, &splash_screen.image_border, kSplashScreenImageBorder);
 
-    return parsed_color || !splash_screen.background_image.empty() ||
-        !splash_screen.image.empty();
+    return parsed_color && (!splash_screen.background_image.empty() ||
+        !splash_screen.image.empty() || splash_screen.background_color);
   };
 
   auto orientation_chosen = kOrientationMap.at(orientation);
   SplashScreenData splash_screen;
 
-  bool valid_element = false;
-  for (auto& dict_element :
+  auto& dict_element =
       parser::GetOneOrMany(manifest.value(),
                            orientation_chosen,
-                           kTizenNamespacePrefix)) {
-    if (dict_element_parser(splash_screen, dict_element))
-      valid_element = true;
-  }
-  if (!valid_element) return false;
+                           kTizenNamespacePrefix);
+  if (dict_element.empty())
+    return true;
+
+  if (dict_element.size() > 1)
+    return false;
+
+  if (!dict_element_parser(splash_screen, dict_element[0]))
+    return false;
 
   ss_info->set_splash_screen_data(std::make_pair(orientation, splash_screen));
   return true;
@@ -124,8 +130,10 @@ bool SplashScreenHandler::ParseElement(const parser::DictionaryValue* dict,
 bool SplashScreenHandler::ParseColor(const parser::DictionaryValue* dict,
                                      SplashScreenData* splash_screen) {
   std::string background_color;
-  if (!dict->GetString(kSplashScreenBgColor, &background_color) ||
-      !IsStringToColorConvertable(background_color))
+  if (!dict->GetString(kSplashScreenBgColor, &background_color))
+    return true;
+
+  if (!IsStringToColorConvertable(background_color))
     return false;
 
   std::string only_hex = background_color.substr(1);
@@ -167,23 +175,27 @@ bool SplashScreenHandler::ParseReadyWhen(const parser::Manifest& manifest,
 
 bool SplashScreenHandler::Parse(const parser::Manifest& manifest,
                                 std::shared_ptr<parser::ManifestData>* output,
-                                std::string* /*error*/) {
+                                std::string* error) {
   auto ss_info = std::make_shared<SplashScreenInfo>();
   if (!ParseReadyWhen(manifest, ss_info.get())) return false;
 
-  ParseSingleOrientation(manifest, ScreenOrientation::AUTO, ss_info.get());
-  ParseSingleOrientation(manifest, ScreenOrientation::LANDSCAPE, ss_info.get());
-  ParseSingleOrientation(manifest, ScreenOrientation::PORTRAIT, ss_info.get());
+  if (!ParseSingleOrientation(manifest, ScreenOrientation::AUTO,
+                              ss_info.get())) {
+    *error = "Failed to parse launch screen default orientation";
+    return false;
+  }
+  if (!ParseSingleOrientation(manifest, ScreenOrientation::LANDSCAPE,
+                              ss_info.get())) {
+    *error = "Failed to parse launch screen landscape orientation";
+    return false;
+  }
+  if (!ParseSingleOrientation(manifest, ScreenOrientation::PORTRAIT,
+                              ss_info.get())) {
+    *error = "Failed to parse launch screen portrait orientation";
+    return false;
+  }
 
   *output = std::static_pointer_cast<parser::ManifestData>(ss_info);
-
-  return true;
-}
-
-bool SplashScreenHandler::Validate(
-    const parser::ManifestData& data,
-    const parser::ManifestDataMap& /*handlers_output*/,
-    std::string* error) const {
   return true;
 }
 
