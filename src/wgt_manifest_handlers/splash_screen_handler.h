@@ -76,9 +76,6 @@ class SplashScreenHandler : public parser::ManifestHandler {
   bool Parse(const parser::Manifest& manifest,
              std::shared_ptr<parser::ManifestData>* output,
              std::string* error) override;
-  bool Validate(const parser::ManifestData& data,
-                const parser::ManifestDataMap& handlers_output,
-                std::string* error) const override;
   std::string Key() const override;
 
  private:
