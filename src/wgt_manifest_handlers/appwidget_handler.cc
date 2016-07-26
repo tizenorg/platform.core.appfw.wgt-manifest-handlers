@@ -48,9 +48,13 @@ const char kTizenAppWidgetBoxContentKey[] = "box-content";
 const char kTizenAppWidgetWidgetLabelKey[] = "widget-label";
 const char kTizenAppWidgetWidgetIconKey[] = "widget-icon";
 const char kTizenAppWidgetWidgetContentKey[] = "widget-content";
+const char kTizenAppWidgetMetadataKey[] = "widget-metadata";
+const char kTizenAppWidgetMetadataKeyKey[] = "@key";
+const char kTizenAppWidgetMetadataValueKey[] = "@value";
 const char kTizenAppWidgetIdKey[] = "@id";
 const char kTizenAppWidgetPrimaryKey[] = "@primary";
 const char kTizenAppWidgetUpdatePeriodKey[] = "@update-period";
+const char kTizenAppWidgetMaxInstanceKey[] = "@max-instance";
 const char kTizenAppWidgetBoxLabelTextKey[] = "#text";
 const char kTizenAppWidgetBoxContentSizeTextKey[] = "#text";
 
@@ -396,6 +400,19 @@ bool ParseContent(const parser::DictionaryValue& dict, const std::string& key,
   return true;
 }
 
+bool ParseMetadata(const parser::DictionaryValue& dict,
+                   AppWidget* app_widgets, std::string* error) {
+  std::string key;
+  if (!GetMandatoryValue(dict, kTizenAppWidgetMetadataKeyKey, &key, error))
+    return false;
+  std::string value;
+  if (!GetOptionalValue(dict, kTizenAppWidgetMetadataValueKey, std::string(),
+                        &value, error))
+    return false;
+  app_widgets->metadata.emplace_back(key, value);
+  return true;
+}
+
 // Parses app-widget part
 bool ParseAppWidget(const parser::DictionaryValue& dict, const std::string& key,
                     AppWidgetVector* app_widgets, std::string* error) {
@@ -420,6 +437,12 @@ bool ParseAppWidget(const parser::DictionaryValue& dict, const std::string& key,
     return false;
   if (update_period != no_update_period)
     app_widget.update_period.push_back(update_period);
+
+  int max_instance = 0;
+  if (!GetOptionalValue(dict, kTizenAppWidgetMaxInstanceKey, 0, &max_instance,
+                        error))
+    return false;
+  app_widget.max_instance = max_instance;
 
   if (!GetOptionalValue(dict, kTizenAppWidgetAutoLaunchKey, false,
                         &app_widget.auto_launch, error))
@@ -472,6 +495,12 @@ bool ParseAppWidget(const parser::DictionaryValue& dict, const std::string& key,
       kTizenAppWidgetWidgetContentKey, kTizenNamespacePrefix)) {
     if (!ParseContent(*dict_c, kTizenAppWidgetWidgetContentKey,
         &app_widget, error))
+      return false;
+  }
+
+  for (const auto& dict_m : parser::GetOneOrMany(&dict,
+      kTizenAppWidgetMetadataKey, kTizenNamespacePrefix)) {
+    if (!ParseMetadata(*dict_m, &app_widget, error))
       return false;
   }
 
