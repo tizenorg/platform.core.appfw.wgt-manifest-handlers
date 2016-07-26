@@ -9,6 +9,7 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "manifest_parser/manifest_handler.h"
@@ -73,6 +74,9 @@ struct AppWidget {
   // optional, default: false
   bool auto_launch;
 
+  // maximum number of widget occurences, 0 means that there is no limit
+  int max_instance;
+
   // box label, multiple(1+)
   AppWidgetLabel label;
 
@@ -95,6 +99,9 @@ struct AppWidget {
 
   // drop view, optional(0-1)
   AppWidgetDropViewVector content_drop_view;
+
+  // metadata of widget
+  std::vector<std::pair<std::string, std::string>> metadata;
 
   // ]- box content
 };
