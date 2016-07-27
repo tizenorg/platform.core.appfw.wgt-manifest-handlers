@@ -480,23 +480,6 @@ bool ParseAppWidget(const parser::DictionaryValue& dict, const std::string& key,
   return true;
 }
 
-// Validates all content sizes in an app-widget
-bool ValidateContentSize(const AppWidgetSizeVector& content_size,
-                         std::string* error) {
-  bool mandatory_1x1_found = false;
-
-  for (const AppWidgetSize& size : content_size) {
-    mandatory_1x1_found |= size.type == AppWidgetSizeType::k1x1;
-  }
-
-  if (!mandatory_1x1_found) {
-    SetError(kErrMsgNoMandatoryContentSize1x1, error);
-    return false;
-  }
-
-  return true;
-}
-
 }  // namespace
 
 
